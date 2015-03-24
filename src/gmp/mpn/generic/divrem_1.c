@@ -1,24 +1,33 @@
 /* mpn_divrem_1 -- mpn by limb division.
 
-Copyright 1991, 1993, 1994, 1996, 1998, 1999, 2000, 2002, 2003 Free Software
+Copyright 1991, 1993, 1994, 1996, 1998-2000, 2002, 2003 Free Software
 Foundation, Inc.
 
 This file is part of the GNU MP Library.
 
 The GNU MP Library is free software; you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as published by
-the Free Software Foundation; either version 2.1 of the License, or (at your
-option) any later version.
+it under the terms of either:
+
+  * the GNU Lesser General Public License as published by the Free
+    Software Foundation; either version 3 of the License, or (at your
+    option) any later version.
+
+or
+
+  * the GNU General Public License as published by the Free Software
+    Foundation; either version 2 of the License, or (at your option) any
+    later version.
+
+or both in parallel, as here.
 
 The GNU MP Library is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public
-License for more details.
+or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
 
-You should have received a copy of the GNU Lesser General Public License
-along with the GNU MP Library; see the file COPYING.LIB.  If not, write to
-the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-MA 02110-1301, USA. */
+You should have received copies of the GNU General Public License and the
+GNU Lesser General Public License along with the GNU MP Library.  If not,
+see https://www.gnu.org/licenses/.  */
 
 #include "gmp.h"
 #include "gmp-impl.h"
@@ -52,8 +61,8 @@ MA 02110-1301, USA. */
    threshold, and best results are obtained by having code for both present.
 
    The main reason for separating the norm and unnorm cases is that not all
-   CPUs give zero for "n0 >> BITS_PER_MP_LIMB" which would arise in the
-   unnorm code used on an already normalized divisor.
+   CPUs give zero for "n0 >> GMP_LIMB_BITS" which would arise in the unnorm
+   code used on an already normalized divisor.
 
    If UDIV_NEEDS_NORMALIZATION is false then plain division uses the same
    non-shifting code for both the norm and unnorm cases, though with
@@ -158,7 +167,7 @@ mpn_divrem_1 (mp_ptr qp, mp_size_t qxn,
   else
     {
       /* Most significant bit of divisor == 0.  */
-      int norm;
+      int cnt;
 
       /* Skip a division if high < divisor (high quotient 0).  Testing here
 	 before normalizing will still skip as often as possible.  */
@@ -180,28 +189,28 @@ mpn_divrem_1 (mp_ptr qp, mp_size_t qxn,
 	  && BELOW_THRESHOLD (n, DIVREM_1_UNNORM_THRESHOLD))
 	goto plain;
 
-      count_leading_zeros (norm, d);
-      d <<= norm;
-      r <<= norm;
+      count_leading_zeros (cnt, d);
+      d <<= cnt;
+      r <<= cnt;
 
       if (UDIV_NEEDS_NORMALIZATION
 	  && BELOW_THRESHOLD (n, DIVREM_1_UNNORM_THRESHOLD))
 	{
+	  mp_limb_t nshift;
 	  if (un != 0)
 	    {
 	      n1 = up[un - 1] << GMP_NAIL_BITS;
-	      r |= (n1 >> (GMP_LIMB_BITS - norm));
+	      r |= (n1 >> (GMP_LIMB_BITS - cnt));
 	      for (i = un - 2; i >= 0; i--)
 		{
 		  n0 = up[i] << GMP_NAIL_BITS;
-		  udiv_qrnnd (*qp, r, r,
-			      (n1 << norm) | (n0 >> (GMP_NUMB_BITS - norm)),
-			      d);
+		  nshift = (n1 << cnt) | (n0 >> (GMP_NUMB_BITS - cnt));
+		  udiv_qrnnd (*qp, r, r, nshift, d);
 		  r >>= GMP_NAIL_BITS;
 		  qp--;
 		  n1 = n0;
 		}
-	      udiv_qrnnd (*qp, r, r, n1 << norm, d);
+	      udiv_qrnnd (*qp, r, r, n1 << cnt, d);
 	      r >>= GMP_NAIL_BITS;
 	      qp--;
 	    }
@@ -211,27 +220,26 @@ mpn_divrem_1 (mp_ptr qp, mp_size_t qxn,
 	      r >>= GMP_NAIL_BITS;
 	      qp--;
 	    }
-	  return r >> norm;
+	  return r >> cnt;
 	}
       else
 	{
-	  mp_limb_t  dinv;
+	  mp_limb_t  dinv, nshift;
 	  invert_limb (dinv, d);
 	  if (un != 0)
 	    {
 	      n1 = up[un - 1] << GMP_NAIL_BITS;
-	      r |= (n1 >> (GMP_LIMB_BITS - norm));
+	      r |= (n1 >> (GMP_LIMB_BITS - cnt));
 	      for (i = un - 2; i >= 0; i--)
 		{
 		  n0 = up[i] << GMP_NAIL_BITS;
-		  udiv_qrnnd_preinv (*qp, r, r, 
-				     ((n1 << norm) | (n0 >> (GMP_NUMB_BITS - norm))),
-				     d, dinv);
+		  nshift = (n1 << cnt) | (n0 >> (GMP_NUMB_BITS - cnt));
+		  udiv_qrnnd_preinv (*qp, r, r, nshift, d, dinv);
 		  r >>= GMP_NAIL_BITS;
 		  qp--;
 		  n1 = n0;
 		}
-	      udiv_qrnnd_preinv (*qp, r, r, n1 << norm, d, dinv);
+	      udiv_qrnnd_preinv (*qp, r, r, n1 << cnt, d, dinv);
 	      r >>= GMP_NAIL_BITS;
 	      qp--;
 	    }
@@ -241,7 +249,7 @@ mpn_divrem_1 (mp_ptr qp, mp_size_t qxn,
 	      r >>= GMP_NAIL_BITS;
 	      qp--;
 	    }
-	  return r >> norm;
+	  return r >> cnt;
 	}
     }
 }

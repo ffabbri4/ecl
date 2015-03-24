@@ -1,4 +1,4 @@
-/* A table of data supporting modlimb_invert().
+/* A table of data supporting binvert_limb().
 
    THE CONTENTS OF THIS FILE ARE FOR INTERNAL USE AND MAY CHANGE
    INCOMPATIBLY OR DISAPPEAR IN A FUTURE GNU MP RELEASE.  */
@@ -9,28 +9,37 @@ Copyright 2000 Free Software Foundation, Inc.
 This file is part of the GNU MP Library.
 
 The GNU MP Library is free software; you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as published by
-the Free Software Foundation; either version 2.1 of the License, or (at your
-option) any later version.
+it under the terms of either:
+
+  * the GNU Lesser General Public License as published by the Free
+    Software Foundation; either version 3 of the License, or (at your
+    option) any later version.
+
+or
+
+  * the GNU General Public License as published by the Free Software
+    Foundation; either version 2 of the License, or (at your option) any
+    later version.
+
+or both in parallel, as here.
 
 The GNU MP Library is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public
-License for more details.
+or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
 
-You should have received a copy of the GNU Lesser General Public License
-along with the GNU MP Library; see the file COPYING.LIB.  If not, write to
-the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-MA 02110-1301, USA.  */
+You should have received copies of the GNU General Public License and the
+GNU Lesser General Public License along with the GNU MP Library.  If not,
+see https://www.gnu.org/licenses/.  */
 
 #include "gmp.h"
 #include "gmp-impl.h"
 
 
-/* modlimb_invert_table[i] is the multiplicative inverse of 2*i+1 mod 256,
-   ie. (modlimb_invert_table[i] * (2*i+1)) % 256 == 1 */
+/* binvert_limb_table[i] is the multiplicative inverse of 2*i+1 mod 256,
+   ie. (binvert_limb_table[i] * (2*i+1)) % 256 == 1 */
 
-const unsigned char  modlimb_invert_table[128] = {
+const unsigned char  binvert_limb_table[128] = {
   0x01, 0xAB, 0xCD, 0xB7, 0x39, 0xA3, 0xC5, 0xEF,
   0xF1, 0x1B, 0x3D, 0xA7, 0x29, 0x13, 0x35, 0xDF,
   0xE1, 0x8B, 0xAD, 0x97, 0x19, 0x83, 0xA5, 0xCF,

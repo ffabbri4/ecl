@@ -9,32 +9,42 @@
    CERTAIN TO BE SUBJECT TO INCOMPATIBLE CHANGES OR DISAPPEAR COMPLETELY IN
    FUTURE GNU MP RELEASES.
 
-Copyright 1991, 1993, 1994, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2005 Free
-Software Foundation, Inc.  Contributed by John Amanatides.
+Copyright 1991, 1993, 1994, 1996-2002, 2005 Free Software Foundation, Inc.
+
+Contributed by John Amanatides.
 
 This file is part of the GNU MP Library.
 
 The GNU MP Library is free software; you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as published by
-the Free Software Foundation; either version 2.1 of the License, or (at your
-option) any later version.
+it under the terms of either:
+
+  * the GNU Lesser General Public License as published by the Free
+    Software Foundation; either version 3 of the License, or (at your
+    option) any later version.
+
+or
+
+  * the GNU General Public License as published by the Free Software
+    Foundation; either version 2 of the License, or (at your option) any
+    later version.
+
+or both in parallel, as here.
 
 The GNU MP Library is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public
-License for more details.
+or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
 
-You should have received a copy of the GNU Lesser General Public License
-along with the GNU MP Library; see the file COPYING.LIB.  If not, write to
-the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-MA 02110-1301, USA. */
+You should have received copies of the GNU General Public License and the
+GNU Lesser General Public License along with the GNU MP Library.  If not,
+see https://www.gnu.org/licenses/.  */
 
 #include "gmp.h"
 #include "gmp-impl.h"
 
-static int millerrabin _PROTO ((mpz_srcptr n, mpz_srcptr nm1,
-                                mpz_ptr x, mpz_ptr y,
-                                mpz_srcptr q, unsigned long int k));
+static int millerrabin (mpz_srcptr, mpz_srcptr,
+			mpz_ptr, mpz_ptr,
+			mpz_srcptr, unsigned long int);
 
 int
 mpz_millerrabin (mpz_srcptr n, int reps)
@@ -93,7 +103,7 @@ mpz_millerrabin (mpz_srcptr n, int reps)
 
 static int
 millerrabin (mpz_srcptr n, mpz_srcptr nm1, mpz_ptr x, mpz_ptr y,
-             mpz_srcptr q, unsigned long int k)
+	     mpz_srcptr q, unsigned long int k)
 {
   unsigned long int i;
 

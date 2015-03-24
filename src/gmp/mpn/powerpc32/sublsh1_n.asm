@@ -1,23 +1,32 @@
 dnl  PowerPC-32 mpn_sublsh1_n -- rp[] = up[] - (vp[] << 1)
 
-dnl  Copyright 2003, 2005 Free Software Foundation, Inc.
+dnl  Copyright 2003, 2005, 2007 Free Software Foundation, Inc.
 
 dnl  This file is part of the GNU MP Library.
-
+dnl
 dnl  The GNU MP Library is free software; you can redistribute it and/or modify
-dnl  it under the terms of the GNU Lesser General Public License as published
-dnl  by the Free Software Foundation; either version 2.1 of the License, or (at
-dnl  your option) any later version.
-
+dnl  it under the terms of either:
+dnl
+dnl    * the GNU Lesser General Public License as published by the Free
+dnl      Software Foundation; either version 3 of the License, or (at your
+dnl      option) any later version.
+dnl
+dnl  or
+dnl
+dnl    * the GNU General Public License as published by the Free Software
+dnl      Foundation; either version 2 of the License, or (at your option) any
+dnl      later version.
+dnl
+dnl  or both in parallel, as here.
+dnl
 dnl  The GNU MP Library is distributed in the hope that it will be useful, but
 dnl  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-dnl  or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public
-dnl  License for more details.
-
-dnl  You should have received a copy of the GNU Lesser General Public License
-dnl  along with the GNU MP Library; see the file COPYING.LIB.  If not, write
-dnl  to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
-dnl  Boston, MA 02110-1301, USA.
+dnl  or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+dnl  for more details.
+dnl
+dnl  You should have received copies of the GNU General Public License and the
+dnl  GNU Lesser General Public License along with the GNU MP Library.  If not,
+dnl  see https://www.gnu.org/licenses/.
 
 include(`../config.m4')
 
@@ -55,16 +64,17 @@ PROLOGUE(mpn_sublsh1_n)
 	addic	up, up, -4	C update up; set cy
 	addi	rp, rp, -4	C update rp
 	slwi	s1, v0, 1
-	bdz	.Lend		C If done, skip loop
+	bdz	L(end)		C If done, skip loop
 
-.Loop:	lwz	v1, 4(vp)	C load v limb
+L(loop):
+	lwz	v1, 4(vp)	C load v limb
 	subfe	s1, s1, u0	C add limbs with cy, set cy
 	srwi	s0, v0, 31	C shift down previous v limb
 	stw	s1, 4(rp)	C store result limb
 	lwzu	u0, 8(up)	C load u limb and update up
 	rlwimi	s0, v1, 1, 0,30	C left shift v limb and merge with prev v limb
 
-	bdz	.Lexit		C decrement ctr and exit if done
+	bdz	L(exit)		C decrement ctr and exit if done
 
 	lwzu	v0, 8(vp)	C load v limb and update vp
 	subfe	s0, s0, u0	C add limbs with cy, set cy
@@ -73,15 +83,16 @@ PROLOGUE(mpn_sublsh1_n)
 	lwz	u0, 4(up)	C load u limb
 	rlwimi	s1, v0, 1, 0,30	C left shift v limb and merge with prev v limb
 
-	bdnz	.Loop		C decrement ctr and loop back
+	bdnz	L(loop)		C decrement ctr and loop back
 
-.Lend:	subfe	r7, s1, u0
+L(end):	subfe	r7, s1, u0
 	srwi	r4, v0, 31
 	stw	r7, 4(rp)	C store last result limb
 	subfze	r3, r4
 	neg	r3, r3
 	blr
-.Lexit:	subfe	r7, s0, u0
+L(exit):
+	subfe	r7, s0, u0
 	srwi	r4, v1, 31
 	stw	r7, 8(rp)	C store last result limb
 	subfze	r3, r4

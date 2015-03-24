@@ -1,23 +1,32 @@
 /* __gmp_extract_double -- convert from double to array of mp_limb_t.
 
-Copyright 1996, 1999, 2000, 2001, 2002, 2006 Free Software Foundation, Inc.
+Copyright 1996, 1999-2002, 2006, 2012 Free Software Foundation, Inc.
 
 This file is part of the GNU MP Library.
 
 The GNU MP Library is free software; you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as published by
-the Free Software Foundation; either version 2.1 of the License, or (at your
-option) any later version.
+it under the terms of either:
+
+  * the GNU Lesser General Public License as published by the Free
+    Software Foundation; either version 3 of the License, or (at your
+    option) any later version.
+
+or
+
+  * the GNU General Public License as published by the Free Software
+    Foundation; either version 2 of the License, or (at your option) any
+    later version.
+
+or both in parallel, as here.
 
 The GNU MP Library is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public
-License for more details.
+or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
 
-You should have received a copy of the GNU Lesser General Public License
-along with the GNU MP Library; see the file COPYING.LIB.  If not, write to
-the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-MA 02110-1301, USA. */
+You should have received copies of the GNU General Public License and the
+GNU Lesser General Public License along with the GNU MP Library.  If not,
+see https://www.gnu.org/licenses/.  */
 
 #include "gmp.h"
 #include "gmp-impl.h"
@@ -29,8 +38,6 @@ MA 02110-1301, USA. */
 #ifndef _GMP_IEEE_FLOATS
 #define _GMP_IEEE_FLOATS 0
 #endif
-
-#define BITS_IN_MANTISSA 53
 
 /* Extract a non-negative double in d.  */
 
@@ -146,23 +153,20 @@ __gmp_extract_double (mp_ptr rp, double d)
     d *= (4.0 * ((unsigned long int) 1 << (BITS_PER_PART - 2)));
 #if BITS_PER_PART == 64
     manl = d;
-#else
+#endif
+#if BITS_PER_PART == 32
     manh = d;
     manl = (d - manh) * (4.0 * ((unsigned long int) 1 << (BITS_PER_PART - 2)));
 #endif
   }
 #endif /* IEEE */
 
-  /* Up until here, we have ignored the actual limb size.  Remains
-     to split manh,,manl into an array of LIMBS_PER_DOUBLE limbs.
-  */
-
   sc = (unsigned) (exp + 64 * GMP_NUMB_BITS) % GMP_NUMB_BITS;
 
   /* We add something here to get rounding right.  */
   exp = (exp + 64 * GMP_NUMB_BITS) / GMP_NUMB_BITS - 64 * GMP_NUMB_BITS / GMP_NUMB_BITS + 1;
 
-#if LIMBS_PER_DOUBLE == 2
+#if BITS_PER_PART == 64 && LIMBS_PER_DOUBLE == 2
 #if GMP_NAIL_BITS == 0
   if (sc != 0)
     {
@@ -198,7 +202,35 @@ __gmp_extract_double (mp_ptr rp, double d)
 #endif
 #endif
 
-#if LIMBS_PER_DOUBLE == 3
+#if BITS_PER_PART == 64 && LIMBS_PER_DOUBLE == 3
+  if (sc > GMP_NAIL_BITS)
+    {
+      rp[2] = manl >> (GMP_LIMB_BITS - sc);
+      rp[1] = (manl << sc - GMP_NAIL_BITS) & GMP_NUMB_MASK;
+      if (sc >= 2 * GMP_NAIL_BITS)
+	rp[0] = 0;
+      else
+	rp[0] = (manl << GMP_NUMB_BITS - GMP_NAIL_BITS + sc) & GMP_NUMB_MASK;
+    }
+  else
+    {
+      if (sc == 0)
+	{
+	  rp[2] = manl >> GMP_NAIL_BITS;
+	  rp[1] = (manl << GMP_NUMB_BITS - GMP_NAIL_BITS) & GMP_NUMB_MASK;
+	  rp[0] = 0;
+	  exp--;
+	}
+      else
+	{
+	  rp[2] = manl >> (GMP_LIMB_BITS - sc);
+	  rp[1] = (manl >> GMP_NAIL_BITS - sc) & GMP_NUMB_MASK;
+	  rp[0] = (manl << GMP_NUMB_BITS - GMP_NAIL_BITS + sc) & GMP_NUMB_MASK;
+	}
+    }
+#endif
+
+#if BITS_PER_PART == 32 && LIMBS_PER_DOUBLE == 3
 #if GMP_NAIL_BITS == 0
   if (sc != 0)
     {
@@ -230,7 +262,7 @@ __gmp_extract_double (mp_ptr rp, double d)
 	{
 	  rp[2] = manh >> GMP_NAIL_BITS;
 	  rp[1] = ((manh << GMP_NUMB_BITS - GMP_NAIL_BITS) | (manl >> 2 * GMP_NAIL_BITS)) & GMP_NUMB_MASK;
-	  rp[0] = 0;
+	  rp[0] = (manl << GMP_NUMB_BITS - 2 * GMP_NAIL_BITS) & GMP_NUMB_MASK;
 	  exp--;
 	}
       else
@@ -244,7 +276,7 @@ __gmp_extract_double (mp_ptr rp, double d)
 #endif
 #endif
 
-#if LIMBS_PER_DOUBLE > 3
+#if BITS_PER_PART == 32 && LIMBS_PER_DOUBLE > 3
   if (sc == 0)
     {
       int i;

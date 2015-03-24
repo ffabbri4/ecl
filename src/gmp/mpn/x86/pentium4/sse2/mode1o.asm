@@ -1,23 +1,32 @@
 dnl  Intel Pentium-4 mpn_modexact_1_odd -- mpn by limb exact remainder.
 
-dnl  Copyright 2001, 2002 Free Software Foundation, Inc.
-dnl
+dnl  Copyright 2001, 2002, 2007 Free Software Foundation, Inc.
+
 dnl  This file is part of the GNU MP Library.
 dnl
-dnl  The GNU MP Library is free software; you can redistribute it and/or
-dnl  modify it under the terms of the GNU Lesser General Public License as
-dnl  published by the Free Software Foundation; either version 2.1 of the
-dnl  License, or (at your option) any later version.
+dnl  The GNU MP Library is free software; you can redistribute it and/or modify
+dnl  it under the terms of either:
 dnl
-dnl  The GNU MP Library is distributed in the hope that it will be useful,
-dnl  but WITHOUT ANY WARRANTY; without even the implied warranty of
-dnl  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-dnl  Lesser General Public License for more details.
+dnl    * the GNU Lesser General Public License as published by the Free
+dnl      Software Foundation; either version 3 of the License, or (at your
+dnl      option) any later version.
 dnl
-dnl  You should have received a copy of the GNU Lesser General Public
-dnl  License along with the GNU MP Library; see the file COPYING.LIB.  If
-dnl  not, write to the Free Software Foundation, Inc., 51 Franklin Street,
-dnl  Fifth Floor, Boston, MA 02110-1301, USA.
+dnl  or
+dnl
+dnl    * the GNU General Public License as published by the Free Software
+dnl      Foundation; either version 2 of the License, or (at your option) any
+dnl      later version.
+dnl
+dnl  or both in parallel, as here.
+dnl
+dnl  The GNU MP Library is distributed in the hope that it will be useful, but
+dnl  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+dnl  or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+dnl  for more details.
+dnl
+dnl  You should have received copies of the GNU General Public License and the
+dnl  GNU Lesser General Public License along with the GNU MP Library.  If not,
+dnl  see https://www.gnu.org/licenses/.
 
 include(`../config.m4')
 
@@ -45,12 +54,6 @@ deflit(`FRAME',0)
 	movd	PARAM_CARRY, %mm1
 	jmp	L(start_1c)
 
-ifdef(`PIC',`
-L(movl_eip_edx):
-	movl	(%esp), %edx
-	ret_internal
-')
-
 EPILOGUE()
 
 
@@ -69,16 +72,10 @@ L(start_1c):
 	andl	$127, %eax		C d/2, 7 bits
 
 ifdef(`PIC',`
-	call	L(movl_eip_edx)
-
-	addl	$_GLOBAL_OFFSET_TABLE_, %edx
-
-	movl	modlimb_invert_table@GOT(%edx), %edx
-	C
-	movzbl	(%eax,%edx), %eax			C inv 8 bits
+	LEA(	binvert_limb_table, %edx)
+	movzbl	(%eax,%edx), %eax		C inv 8 bits
 ',`
-dnl non-PIC
-	movzbl	modlimb_invert_table(%eax), %eax	C inv 8 bits
+	movzbl	binvert_limb_table(%eax), %eax	C inv 8 bits
 ')
 
 	C
@@ -115,7 +112,7 @@ dnl non-PIC
 
 	psubd	%mm0, %mm6		C inv = 2*inv - inv*inv*d
 
-	ASSERT(e,`	C expect d*inv == 1 mod 2^BITS_PER_MP_LIMB
+	ASSERT(e,`	C expect d*inv == 1 mod 2^GMP_LIMB_BITS
 	pushl	%eax	FRAME_pushl()
 	movd	%mm6, %eax
 	imul	PARAM_DIVISOR, %eax
@@ -127,13 +124,13 @@ dnl non-PIC
 
 C The dependent chain here is as follows.
 C
-C				        latency
-C	psubq	 s = (src-cbit) - climb    2
-C	pmuludq	 q = s*inverse             8
-C	pmuludq	 prod = q*divisor          8
-C	psrlq	 climb = high(prod)        2
-C	                                  --
-C	                                  20
+C					latency
+C	psubq	 s = (src-cbit) - climb	   2
+C	pmuludq	 q = s*inverse		   8
+C	pmuludq	 prod = q*divisor	   8
+C	psrlq	 climb = high(prod)	   2
+C					  --
+C					  20
 C
 C Yet the loop measures 19.0 c/l, so obviously there's something gained
 C there over a straight reading of the chip documentation.

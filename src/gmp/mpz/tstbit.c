@@ -5,19 +5,28 @@ Copyright 2000, 2002 Free Software Foundation, Inc.
 This file is part of the GNU MP Library.
 
 The GNU MP Library is free software; you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as published by
-the Free Software Foundation; either version 2.1 of the License, or (at your
-option) any later version.
+it under the terms of either:
+
+  * the GNU Lesser General Public License as published by the Free
+    Software Foundation; either version 3 of the License, or (at your
+    option) any later version.
+
+or
+
+  * the GNU General Public License as published by the Free Software
+    Foundation; either version 2 of the License, or (at your option) any
+    later version.
+
+or both in parallel, as here.
 
 The GNU MP Library is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public
-License for more details.
+or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
 
-You should have received a copy of the GNU Lesser General Public License
-along with the GNU MP Library; see the file COPYING.LIB.  If not, write to
-the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-MA 02110-1301, USA. */
+You should have received copies of the GNU General Public License and the
+GNU Lesser General Public License along with the GNU MP Library.  If not,
+see https://www.gnu.org/licenses/.  */
 
 #include "gmp.h"
 #include "gmp-impl.h"
@@ -40,12 +49,12 @@ MA 02110-1301, USA. */
    the limb_index >= abs_size test covers u=0 too.  */
 
 int
-mpz_tstbit (mpz_srcptr u, unsigned long bit_index)
+mpz_tstbit (mpz_srcptr u, mp_bitcnt_t bit_index) __GMP_NOTHROW
 {
   mp_srcptr      u_ptr      = PTR(u);
   mp_size_t      size       = SIZ(u);
   unsigned       abs_size   = ABS(size);
-  unsigned long  limb_index = bit_index / GMP_NUMB_BITS;
+  mp_size_t      limb_index = bit_index / GMP_NUMB_BITS;
   mp_srcptr      p          = u_ptr + limb_index;
   mp_limb_t      limb;
 
@@ -58,14 +67,14 @@ mpz_tstbit (mpz_srcptr u, unsigned long bit_index)
       limb = -limb;     /* twos complement */
 
       while (p != u_ptr)
-        {
-          p--;
-          if (*p != 0)
-            {
-              limb--;   /* make it a ones complement instead */
-              break;
-            }
-        }
+	{
+	  p--;
+	  if (*p != 0)
+	    {
+	      limb--;	/* make it a ones complement instead */
+	      break;
+	    }
+	}
     }
 
   return (limb >> (bit_index % GMP_NUMB_BITS)) & 1;

@@ -1,22 +1,30 @@
-Copyright 1996, 1997, 1999, 2000, 2001, 2002, 2006 Free Software Foundation,
-Inc.
+Copyright 1996, 1997, 1999-2002, 2006 Free Software Foundation, Inc.
 
 This file is part of the GNU MP Library.
 
 The GNU MP Library is free software; you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as published by
-the Free Software Foundation; either version 2.1 of the License, or (at your
-option) any later version.
+it under the terms of either:
+
+  * the GNU Lesser General Public License as published by the Free
+    Software Foundation; either version 3 of the License, or (at your
+    option) any later version.
+
+or
+
+  * the GNU General Public License as published by the Free Software
+    Foundation; either version 2 of the License, or (at your option) any
+    later version.
+
+or both in parallel, as here.
 
 The GNU MP Library is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public
-License for more details.
+or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
 
-You should have received a copy of the GNU Lesser General Public License
-along with the GNU MP Library; see the file COPYING.LIB.  If not, write to
-the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-02110-1301, USA.
+You should have received copies of the GNU General Public License and the
+GNU Lesser General Public License along with the GNU MP Library.  If not,
+see https://www.gnu.org/licenses/.
 
 
 
@@ -29,16 +37,12 @@ the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 These instructions are only for the impatient.  Others should read the install
 instructions in gmp.info.  Use
 
-	info -f ./gmp.info
+	info -f doc/gmp.info
 
-or in emacs
+from the gmp source directory.
 
-	C-u C-h i gmp.info
-
-
-Here are some brief instructions on how to install GMP, and some examples to
-help you get started using it.  First you need to compile.  Since you're
-impatient, try this
+Here are some brief instructions on how to install GMP.  First you need to
+compile.  Since you're impatient, try this
 
 	./configure
 	make
@@ -64,9 +68,9 @@ If you are new to GMP, it is a good idea you at least read the chapter "GMP
 Basics" in the manual.
 
 Some known build problems are noted in the "Installing GMP" chapter of
-the manual.  Please report other problems to gmp-bugs@swox.com.
+the manual.  Please report other problems to gmp-bugs@gmplib.org.
 
-The GMP web site is located here: http://swox.com/gmp/.
+The GMP web site is located here: https://gmplib.org/.
 
 
 ----------------

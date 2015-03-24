@@ -1,23 +1,32 @@
 /* Memory allocation routines.
 
-Copyright 1991, 1993, 1994, 2000, 2001, 2002 Free Software Foundation, Inc.
+Copyright 1991, 1993, 1994, 2000-2002, 2012 Free Software Foundation, Inc.
 
 This file is part of the GNU MP Library.
 
 The GNU MP Library is free software; you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as published by
-the Free Software Foundation; either version 2.1 of the License, or (at your
-option) any later version.
+it under the terms of either:
+
+  * the GNU Lesser General Public License as published by the Free
+    Software Foundation; either version 3 of the License, or (at your
+    option) any later version.
+
+or
+
+  * the GNU General Public License as published by the Free Software
+    Foundation; either version 2 of the License, or (at your option) any
+    later version.
+
+or both in parallel, as here.
 
 The GNU MP Library is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public
-License for more details.
+or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
 
-You should have received a copy of the GNU Lesser General Public License
-along with the GNU MP Library; see the file COPYING.LIB.  If not, write to
-the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-MA 02110-1301, USA. */
+You should have received copies of the GNU General Public License and the
+GNU Lesser General Public License along with the GNU MP Library.  If not,
+see https://www.gnu.org/licenses/.  */
 
 #include <stdio.h>
 #include <stdlib.h> /* for malloc, realloc, free */
@@ -26,10 +35,9 @@ MA 02110-1301, USA. */
 #include "gmp-impl.h"
 
 
-void *	(*__gmp_allocate_func) _PROTO ((size_t)) = __gmp_default_allocate;
-void *	(*__gmp_reallocate_func) _PROTO ((void *, size_t, size_t))
-     = __gmp_default_reallocate;
-void	(*__gmp_free_func) _PROTO ((void *, size_t)) = __gmp_default_free;
+void * (*__gmp_allocate_func) (size_t) = __gmp_default_allocate;
+void * (*__gmp_reallocate_func) (void *, size_t, size_t) = __gmp_default_reallocate;
+void   (*__gmp_free_func) (void *, size_t) = __gmp_default_free;
 
 
 /* Default allocation functions.  In case of failure to allocate/reallocate
@@ -41,12 +49,12 @@ __gmp_default_allocate (size_t size)
   void *ret;
 #ifdef DEBUG
   size_t req_size = size;
-  size += 2 * BYTES_PER_MP_LIMB;
+  size += 2 * GMP_LIMB_BYTES;
 #endif
   ret = malloc (size);
   if (ret == 0)
     {
-      fprintf (stderr, "GNU MP: Cannot allocate memory (size=%u)\n", size);
+      fprintf (stderr, "GNU MP: Cannot allocate memory (size=%lu)\n", (long) size);
       abort ();
     }
 
@@ -55,8 +63,8 @@ __gmp_default_allocate (size_t size)
     mp_ptr p = ret;
     p++;
     p[-1] = (0xdeadbeef << 31) + 0xdeafdeed;
-    if (req_size % BYTES_PER_MP_LIMB == 0)
-      p[req_size / BYTES_PER_MP_LIMB] = ~((0xdeadbeef << 31) + 0xdeafdeed);
+    if (req_size % GMP_LIMB_BYTES == 0)
+      p[req_size / GMP_LIMB_BYTES] = ~((0xdeadbeef << 31) + 0xdeafdeed);
     ret = p;
   }
 #endif
@@ -79,8 +87,8 @@ __gmp_default_reallocate (void *oldptr, size_t old_size, size_t new_size)
 	  fprintf (stderr, "gmp: (realloc) data clobbered before allocation block\n");
 	  abort ();
 	}
-      if (old_size % BYTES_PER_MP_LIMB == 0)
-	if (p[old_size / BYTES_PER_MP_LIMB] != ~((0xdeadbeef << 31) + 0xdeafdeed))
+      if (old_size % GMP_LIMB_BYTES == 0)
+	if (p[old_size / GMP_LIMB_BYTES] != ~((0xdeadbeef << 31) + 0xdeafdeed))
 	  {
 	    fprintf (stderr, "gmp: (realloc) data clobbered after allocation block\n");
 	    abort ();
@@ -88,13 +96,13 @@ __gmp_default_reallocate (void *oldptr, size_t old_size, size_t new_size)
       oldptr = p - 1;
     }
 
-  new_size += 2 * BYTES_PER_MP_LIMB;
+  new_size += 2 * GMP_LIMB_BYTES;
 #endif
 
   ret = realloc (oldptr, new_size);
   if (ret == 0)
     {
-      fprintf (stderr, "GNU MP: Cannot reallocate memory (old_size=%u new_size=%u)\n", old_size, new_size);
+      fprintf (stderr, "GNU MP: Cannot reallocate memory (old_size=%lu new_size=%lu)\n", (long) old_size, (long) new_size);
       abort ();
     }
 
@@ -103,8 +111,8 @@ __gmp_default_reallocate (void *oldptr, size_t old_size, size_t new_size)
     mp_ptr p = ret;
     p++;
     p[-1] = (0xdeadbeef << 31) + 0xdeafdeed;
-    if (req_size % BYTES_PER_MP_LIMB == 0)
-      p[req_size / BYTES_PER_MP_LIMB] = ~((0xdeadbeef << 31) + 0xdeafdeed);
+    if (req_size % GMP_LIMB_BYTES == 0)
+      p[req_size / GMP_LIMB_BYTES] = ~((0xdeadbeef << 31) + 0xdeafdeed);
     ret = p;
   }
 #endif
@@ -124,8 +132,8 @@ __gmp_default_free (void *blk_ptr, size_t blk_size)
 	    fprintf (stderr, "gmp: (free) data clobbered before allocation block\n");
 	    abort ();
 	  }
-	if (blk_size % BYTES_PER_MP_LIMB == 0)
-	  if (p[blk_size / BYTES_PER_MP_LIMB] != ~((0xdeadbeef << 31) + 0xdeafdeed))
+	if (blk_size % GMP_LIMB_BYTES == 0)
+	  if (p[blk_size / GMP_LIMB_BYTES] != ~((0xdeadbeef << 31) + 0xdeafdeed))
 	    {
 	      fprintf (stderr, "gmp: (free) data clobbered after allocation block\n");
 	      abort ();

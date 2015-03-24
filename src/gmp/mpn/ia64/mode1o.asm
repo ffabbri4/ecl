@@ -1,30 +1,41 @@
 dnl  Itanium-2 mpn_modexact_1c_odd -- mpn by 1 exact remainder.
 
-dnl  Copyright 2003, 2004, 2005 Free Software Foundation, Inc.
-dnl
+dnl  Contributed to the GNU project by Kevin Ryde.
+
+dnl  Copyright 2003-2005 Free Software Foundation, Inc.
+
 dnl  This file is part of the GNU MP Library.
 dnl
-dnl  The GNU MP Library is free software; you can redistribute it and/or
-dnl  modify it under the terms of the GNU Lesser General Public License as
-dnl  published by the Free Software Foundation; either version 2.1 of the
-dnl  License, or (at your option) any later version.
+dnl  The GNU MP Library is free software; you can redistribute it and/or modify
+dnl  it under the terms of either:
 dnl
-dnl  The GNU MP Library is distributed in the hope that it will be useful,
-dnl  but WITHOUT ANY WARRANTY; without even the implied warranty of
-dnl  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-dnl  Lesser General Public License for more details.
+dnl    * the GNU Lesser General Public License as published by the Free
+dnl      Software Foundation; either version 3 of the License, or (at your
+dnl      option) any later version.
 dnl
-dnl  You should have received a copy of the GNU Lesser General Public
-dnl  License along with the GNU MP Library; see the file COPYING.LIB.  If
-dnl  not, write to the Free Software Foundation, Inc., 51 Franklin Street,
-dnl  Fifth Floor, Boston, MA 02110-1301, USA.
+dnl  or
+dnl
+dnl    * the GNU General Public License as published by the Free Software
+dnl      Foundation; either version 2 of the License, or (at your option) any
+dnl      later version.
+dnl
+dnl  or both in parallel, as here.
+dnl
+dnl  The GNU MP Library is distributed in the hope that it will be useful, but
+dnl  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+dnl  or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+dnl  for more details.
+dnl
+dnl  You should have received copies of the GNU General Public License and the
+dnl  GNU Lesser General Public License along with the GNU MP Library.  If not,
+dnl  see https://www.gnu.org/licenses/.
 
 include(`../config.m4')
 
 
 C            cycles/limb
-C Itanium:      14?
-C Itanium 2:     8.0
+C Itanium:      15
+C Itanium 2:     8
 
 
 dnl  Usage: ABI32(`code')
@@ -99,7 +110,7 @@ C probably be about 14 cycles (2 per bit beyond the first couple).  Or it
 C could be taken from 4 bits to 8 with xmpy doubling as used beyond 8 bits,
 C but that would be about 11 cycles.
 C
-C The table is not the same as modlimb_invert_table, instead it's 256 bytes,
+C The table is not the same as binvert_limb_table, instead it's 256 bytes,
 C designed to be indexed by the low byte of the divisor.  The divisor is
 C always odd, so the relevant data is every second byte in the table.  The
 C padding lets us use zxt1 instead of extr.u, the latter would cost an extra

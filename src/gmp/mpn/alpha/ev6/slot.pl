@@ -1,23 +1,32 @@
 #!/usr/bin/perl -w
 
-# Copyright 2000, 2001, 2003, 2004, 2005 Free Software Foundation, Inc.
+# Copyright 2000, 2001, 2003-2005, 2011 Free Software Foundation, Inc.
 #
-# This file is part of the GNU MP Library.
+#  This file is part of the GNU MP Library.
 #
-# The GNU MP Library is free software; you can redistribute it and/or modify
-# it under the terms of the GNU Lesser General Public License as published
-# by the Free Software Foundation; either version 2.1 of the License, or (at
-# your option) any later version.
+#  The GNU MP Library is free software; you can redistribute it and/or modify
+#  it under the terms of either:
 #
-# The GNU MP Library is distributed in the hope that it will be useful, but
-# WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-# or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public
-# License for more details.
+#    * the GNU Lesser General Public License as published by the Free
+#      Software Foundation; either version 3 of the License, or (at your
+#      option) any later version.
 #
-# You should have received a copy of the GNU Lesser General Public License
-# along with the GNU MP Library; see the file COPYING.LIB.  If not, write to
-# the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-# MA 02110-1301, USA.
+#  or
+#
+#    * the GNU General Public License as published by the Free Software
+#      Foundation; either version 2 of the License, or (at your option) any
+#      later version.
+#
+#  or both in parallel, as here.
+#
+#  The GNU MP Library is distributed in the hope that it will be useful, but
+#  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+#  or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+#  for more details.
+#
+#  You should have received copies of the GNU General Public License and the
+#  GNU Lesser General Public License along with the GNU MP Library.  If not,
+#  see https://www.gnu.org/licenses/.
 
 
 # Usage: slot.pl [filename.o]...
@@ -38,13 +47,16 @@ use strict;
 
 # The U or L which various instructions demand, or E if either.
 #
-my %optable = 
+my %optable =
   (
    'addq'   => 'E',
    'and'    => 'E',
+   'andnot' => 'E',
    'beq'    => 'U',
    'bge'    => 'U',
    'bgt'    => 'U',
+   'bic'    => 'E',
+   'bis'    => 'E',
    'blt'    => 'U',
    'bne'    => 'U',
    'br'     => 'L',
@@ -73,6 +85,7 @@ my %optable =
    'ldt'    => 'L',
    'ret'    => 'L',
    'mov'    => 'E',
+   'mull'   => 'U',
    'mulq'   => 'U',
    'negq'   => 'E',
    'nop'    => 'E',
@@ -93,7 +106,7 @@ my %optable =
 # Slottings used for a given pattern of U/L/E in an octaword.  This is as
 # per the "Ebox Slotting" section of the EV6 hardware reference manual.
 #
-my %slottable = 
+my %slottable =
   (
    'EEEE' => 'ULUL',
    'EEEL' => 'ULUL',
@@ -286,7 +299,7 @@ sub disassemble {
       }
     }
   }
-  
+
   close IN || die "Error from objdump (or objdump not available)\n";
 }
 
