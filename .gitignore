@@ -5,6 +5,8 @@
 
 build
 cov-int
+# android build dir
+android
 
 *.data
 *.dll
