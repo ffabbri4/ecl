@@ -12,7 +12,7 @@ mkdir -p $BUILD_DIR
 
 HOST_BUILD_DIR=${BUILD_DIR}/host
 HOST_INSTALL_DIR=${INSTALL_DIR}/host
-if [ -z ${HOST_BUILD_DIR}/bin/ecl ]; then
+if [ ! -e ${HOST_BUILD_DIR}/bin/ecl ]; then
 
 # Build 32 bit crosscompiler host without longdouble
 ABI=32
