@@ -1,0 +1,90 @@
+#!/bin/sh
+if [ "x$ANDROID_NDK" = "x" ]; then
+    echo "Please export ANDROID_NDK environment"
+    exit 1;
+fi
+
+INSTALL_DIR=`pwd`/android/install
+BUILD_DIR=`pwd`/android/build
+SRC_DIR=`pwd`/src
+mkdir -p $INSTALL_DIR
+mkdir -p $BUILD_DIR
+
+HOST_BUILD_DIR=${BUILD_DIR}/host
+HOST_INSTALL_DIR=${INSTALL_DIR}/host
+if [ -z ${HOST_BUILD_DIR}/bin/ecl ]; then
+
+# Build 32 bit crosscompiler host without longdouble
+ABI=32
+CFLAGS="-m32 -g -O2"
+LDFLAGS="-m32 -g -O2"
+mkdir -p ${HOST_BUILD_DIR} && cd ${HOST_BUILD_DIR};
+echo `pwd`;
+
+$SRC_DIR/configure \
+ABI=${ABI} CFLAGS="${CFLAGS}" LDFLAGS="${LDFLAGS}" \
+    --enable-threads=yes \
+    --disable-longdouble \
+    --with-dffi=no \
+    --prefix=${HOST_INSTALL_DIR}
+
+make && make install 
+fi
+
+# Build 32bit arm android
+ANDROID_BUILD_DIR=${BUILD_DIR}/android
+ANDROID_INSTALL_DIR=${INSTALL_DIR}/android
+mkdir -p ${ANDROID_BUILD_DIR} && cd ${ANDROID_BUILD_DIR};
+
+ABI=arm-linux-androideabi
+TOOLCHAIN_VERSION=4.9
+API_LEVEL=19
+
+ANDROID_PREFIX=${ANDROID_NDK}/toolchains/arm-linux-androideabi-$TOOLCHAIN_VERSION/prebuilt/linux-x86_64
+SYSROOT=${ANDROID_NDK}/platforms/android-$API_LEVEL/arch-arm
+CROSS_PATH=${ANDROID_PREFIX}/bin/${ABI}
+CPP=${CROSS_PATH}-cpp
+AR=${CROSS_PATH}-ar
+AS=${CROSS_PATH}-as
+NM=${CROSS_PATH}-nm
+CC=${CROSS_PATH}-gcc
+CXX=${CROSS_PATH}-g++
+LD=${CROSS_PATH}-ld
+RANLIB=${CROSS_PATH}-ranlib
+OBJCOPY=${CROSS_PATH}-objcopy
+STRIP=${CROSS_PATH}-strip
+GRPROF=${CROSS_PATH}-gprof
+READELF=${CROSS_PATH}-readelf
+OBJDUMP=${CROSS_PATH}-objdump
+
+PKG_CONFIG_PATH=${PREFIX}/lib/pkgconfig
+
+# http://stackoverflow.com/questions/24818902/running-a-native-library-on-android-l-error-only-position-independent-executab 
+
+CFLAGS="--sysroot=${SYSROOT} -I${SYSROOT}/usr/include -I${ANDROID_PREFIX}/include -I${DEV_PREFIX}/android/bionic"
+CPPFLAGS="${CFLAGS}"
+LDFLAGS="--sysroot=${SYSROOT} -L${SYSROOT}/usr/lib -L${ANDROID_PREFIX}/lib"
+
+${SRC_DIR}/configure \
+RANLIB="$RANLIB" LD="$LD" CXX="$CXX" CC="$CC" NM="$NM" \
+AS="$AS" AR="$AR" CPP="$CPP" CFLAGS="$CFLAGS" CPPFLAGS="$CPPFLAGS" \
+LDFLAGS="$LDFLAGS" OBJCOPY="$OBJCOPY" STRIP="$STRIP" \
+GPROF="$GPROF" READELF="$READELF" OBJDUMP="$OBJDUMP" \
+ECL_TO_RUN=${HOST_INSTALL_DIR}/bin/ecl \
+    --host=${ABI} \
+    --target=${ABI} \
+    --with-cross-config=${SRC_DIR}/android_cross_config.in \
+    --prefix=${ANDROID_INSTALL_DIR} \
+    --disable-longdouble \
+    --disable-shared \
+    --enable-threads=yes \
+    --with-dffi=no \
+    --with-cmp=no \
+    --with-asdf=builtin \
+    --with-bytecmp=builtin \
+    --with-serve-event=yes \
+    $@
+
+make && make install
+
+echo "ECL Android compiled in ${ANDROID_INSTALL_DIR}"
