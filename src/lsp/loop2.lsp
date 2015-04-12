@@ -585,6 +585,7 @@ a LET-like macro, and a SETQ-like macro, which perform LOOP-style destructuring.
 		     main-body
 		     after-loop
 		     epilogue)
+  (declare (ignore env))
   (unless (= (length before-loop) (length after-loop))
     (error "LOOP-BODY called with non-synched before- and after-loop lists."))
   ;;All our work is done from these copies, working backwards from the end:
@@ -1594,7 +1595,8 @@ Note that this is not a valid ANSI code."))
 			  sequence-variable sequence-type
 			  step-hack default-top
 			  prep-phrases)
-  (declare (si::c-local))
+  (declare (si::c-local)
+	   (ignore indexv-user-specified-p))
    (let ((endform nil)				;Form (constant or variable) with limit value.
 	 (sequencep nil)			;T if sequence arg has been provided.
 	 (testfn nil)				;endtest function
