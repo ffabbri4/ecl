@@ -1,10 +1,5 @@
-# AMD64
-export CFLAGS="-O2 -g"
+export CFLAGS="-O0 -g"
 export LDFLAGS='-g'
-
-# i686
-#export CFLAGS="-march=i686 -O2 -g
-#export LDFLAGS='-g'
 
 make distclean >/tmp/ecl-clean.txt 2>&1
 
