@@ -18,6 +18,14 @@ locked waiting on a mutex.  Occasionally, instead of busy-looping,
 we get an idle hang.  When avoiding to use stdio, this is a generally
 avoidable bug; I have daemons using ECL with decent uptimes.
 
+When disabling the GC_NETBSD_THREADS_WORKAROUND quirk in libgc, it
+seems to require less time for (test4) to freeze.  This workaround
+ensures synchronization when resuming threads.
+
+When first doing some operations growing the heap, it takes more
+time for (test4) to reproduce the bug, because there is a relation
+between the bug and multithreaded heap growth.
+
 - Verify again that the proper signals are sent for the proper reasons
   and they they are matched by the proper signal responses.
 - Investigate if the signal masks are sometimes bogus, or if the
@@ -29,3 +37,5 @@ avoidable bug; I have daemons using ECL with decent uptimes.
   situations happen in restartable or non-restartable calls.
 - NetBSD has pthread_suspend_np(3) and pthread_resume_np(3).
   Verify if Boehm-GC can use those, and if so, enable them and test.
+  These appear to currently only be used for OpenBSD user threads,
+  and also require OpenBSD-specific pthread_stackseg_np().
