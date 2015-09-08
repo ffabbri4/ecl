@@ -1,0 +1,128 @@
+$ gdb /usr/local/gitlab-ecl/bin/ecl 2916
+GNU gdb (GDB) 7.3.1
+Copyright (C) 2011 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.  Type "show copying"
+and "show warranty" for details.
+This GDB was configured as "x86_64--netbsd".
+For bug reporting instructions, please see:
+<http://www.gnu.org/software/gdb/bugs/>...
+Reading symbols from /usr/local/gitlab-ecl/bin/ecl...done.
+Attaching to program: /usr/local/gitlab-ecl/bin/ecl, process 2916
+Reading symbols from /usr/local/gitlab-ecl/lib//libecl.so.16.0...done.
+Loaded symbols for /usr/local/gitlab-ecl/lib//libecl.so.16.0
+Reading symbols from /usr/lib/libpthread.so.1...done.
+[New LWP 4]
+[New LWP 2]
+Loaded symbols for /usr/lib/libpthread.so.1
+Reading symbols from /usr/lib/libm.so.0...done.
+Loaded symbols for /usr/lib/libm.so.0
+Reading symbols from /usr/lib/libc.so.12...done.
+Loaded symbols for /usr/lib/libc.so.12
+Reading symbols from /usr/lib/libgcc_s.so.1...done.
+Loaded symbols for /usr/lib/libgcc_s.so.1
+Reading symbols from /usr/pkg/lib/libgmp.so.10...done.
+Loaded symbols for /usr/pkg/lib/libgmp.so.10
+Reading symbols from /usr/pkg/lib/libffi.so.6...done.
+Loaded symbols for /usr/pkg/lib/libffi.so.6
+Reading symbols from /usr/local/gitlab-ecl/lib/ecl-16.0.0/cmp.fas...done.
+Loaded symbols for /usr/local/gitlab-ecl/lib/ecl-16.0.0/cmp.fas
+Reading symbols from /home/mmondor/work/ecl-gitlab/ecl/ecl-gc-bug/gc-bug-test.fas...done.
+Loaded symbols for /home/mmondor/work/ecl-gitlab/ecl/ecl-gc-bug/gc-bug-test.fas
+Reading symbols from /usr/libexec/ld.elf_so...done.
+Loaded symbols for /usr/libexec/ld.elf_so
+[Switching to LWP 1]
+pthread__mutex_pause () at /usr/src/lib/libpthread/pthread_mutex.c:183
+183     }
+(gdb) info threads
+  Id   Target Id         Frame
+  3    LWP 2             0x00007f7ff6a393fa in _sys___sigsuspend14 () from /usr/lib/libc.so.12
+  2    LWP 4             pthread__mutex_pause () at /usr/src/lib/libpthread/pthread_mutex.c:183
+* 1    LWP 1             0x00007f7ff6a395da in _sys___nanosleep50 () from /usr/lib/libc.so.12
+(gdb) thread 1
+[Switching to thread 1 (LWP 1)]
+#0  0x00007f7ff6a395da in _sys___nanosleep50 () from /usr/lib/libc.so.12
+(gdb) bt
+#0  0x00007f7ff6a395da in _sys___nanosleep50 () from /usr/lib/libc.so.12
+#1  0x00007f7ff720740c in __nanosleep50 (rqtp=<optimized out>, rmtp=<optimized out>) at /usr/src/lib/libpthread/pthread_cancelstub.c:398
+#2  0x00007f7ff6ad6689 in _usleep (useconds=<optimized out>) at /usr/src/lib/libc/gen/usleep.c:63
+#3  0x00007f7ff77e3d30 in GC_stop_world () at /home/mmondor/work/ecl-gitlab/ecl/src/bdwgc/pthread_stop_world.c:636
+#4  0x00007f7ff77d7b4e in GC_stopped_mark (stop_func=0x7f7ff77d77b0 <GC_never_stop_func>) at /home/mmondor/work/ecl-gitlab/ecl/src/bdwgc/alloc.c:611
+#5  0x00007f7ff77d827a in GC_try_to_collect_inner (stop_func=0x7f7ff77d77b0 <GC_never_stop_func>) at /home/mmondor/work/ecl-gitlab/ecl/src/bdwgc/alloc.c:461
+#6  0x00007f7ff77d8dee in GC_collect_or_expand (needed_blocks=1, ignore_off_page=1, retry=0) at /home/mmondor/work/ecl-gitlab/ecl/src/bdwgc/alloc.c:1270
+#7  0x00007f7ff77dbb3f in GC_alloc_large (lb=4096, k=0, flags=1) at /home/mmondor/work/ecl-gitlab/ecl/src/bdwgc/malloc.c:62
+#8  0x00007f7ff77dc626 in GC_generic_malloc_ignore_off_page (lb=4096, k=<optimized out>) at /home/mmondor/work/ecl-gitlab/ecl/src/bdwgc/mallocx.c:202
+#9  0x00007f7ff77caafe in ecl_alloc_atomic (n=4096) at /home/mmondor/work/ecl-gitlab/ecl/src/c/alloc_2.d:734
+#10 0x00007f7ff77b0568 in ecl_array_allocself (x=0xa478ba0) at /home/mmondor/work/ecl-gitlab/ecl/src/c/array.d:573
+#11 0x00007f7ff77b0e2f in si_make_vector (etype=0x7f7ff7b0be58, dim=0x4003, adj=0x1, fillp=0x4003, displ=0x1, disploff=0x3) at /home/mmondor/work/ecl-gitlab/ecl/src/c/array.d:523
+#12 0x00007f7ff4c0207d in L1test1 () at gc-bug-test.c:36
+#13 0x00007f7ff4c02f38 in L6test4 () at gc-bug-test.c:216
+#14 0x00007f7ff77742e6 in ecl_interpret (frame=0x7f7fffffd080, env=<optimized out>, bytecodes=<optimized out>) at /home/mmondor/work/ecl-gitlab/ecl/src/c/interpreter.d:496
+#15 0x00007f7ff7778b3c in eval_nontrivial_form (form=<optimized out>, env=0x7f7ff7fe5000) at /home/mmondor/work/ecl-gitlab/ecl/src/c/compiler.d:2394
+#16 eval_form (env=0x7f7ff7fe5000, form=<optimized out>) at /home/mmondor/work/ecl-gitlab/ecl/src/c/compiler.d:2408
+#17 0x00007f7ff777a69d in si_eval_with_env (narg=<optimized out>, form=0x2c04ce1) at /home/mmondor/work/ecl-gitlab/ecl/src/c/compiler.d:3156
+#18 0x00007f7ff7759cc2 in LC19rep (narg=0) at clos/top.c:1279
+#19 0x00007f7ff775bec3 in L24tpl (narg=0) at clos/top.c:1166
+#20 0x00007f7ff775cfca in L1top_level (narg=1) at clos/top.c:61
+#21 0x00007f7ff7774139 in ecl_interpret (frame=0x7f7fffffd6f0, env=<optimized out>, bytecodes=<optimized out>) at /home/mmondor/work/ecl-gitlab/ecl/src/c/interpreter.d:518
+#22 0x00007f7ff7778b3c in eval_nontrivial_form (form=<optimized out>, env=0x7f7ff7fe5000) at /home/mmondor/work/ecl-gitlab/ecl/src/c/compiler.d:2394
+#23 eval_form (env=0x7f7ff7fe5000, form=<optimized out>) at /home/mmondor/work/ecl-gitlab/ecl/src/c/compiler.d:2408
+#24 0x00007f7ff777a69d in si_eval_with_env (narg=<optimized out>, form=0x2000d61) at /home/mmondor/work/ecl-gitlab/ecl/src/c/compiler.d:3156
+#25 0x00007f7ff775d65f in si_safe_eval (narg=2, v1form=0x2000d61, v2env=0x1) at clos/top.c:4768
+#26 0x0000000000400e63 in main (argc=<optimized out>, argv=<optimized out>) at eclinit10848e.c:60
+(gdb) thread 2
+[Switching to thread 2 (LWP 4)]
+#0  pthread__mutex_pause () at /usr/src/lib/libpthread/pthread_mutex.c:183
+183     }
+(gdb) bt
+#0  pthread__mutex_pause () at /usr/src/lib/libpthread/pthread_mutex.c:183
+#1  0x00007f7ff72084e5 in pthread__mutex_spin (ptm=0x7f7ff4000018, owner=<optimized out>) at /usr/src/lib/libpthread/pthread_mutex.c:208
+#2  0x00007f7ff7208982 in pthread__mutex_lock_slow (ptm=0x7f7ff4000018) at /usr/src/lib/libpthread/pthread_mutex.c:291
+#3  0x00007f7ff720b370 in pthread_setcancelstate (state=1, oldstate=0x7f7ff47ff19c) at /usr/src/lib/libpthread/pthread.c:806
+#4  0x00007f7ff77e39d2 in GC_suspend_handler_inner (sig_arg=0x20 <Address 0x20 out of bounds>, context=<optimized out>) at /home/mmondor/work/ecl-gitlab/ecl/src/bdwgc/pthread_stop_world.c:247
+#5  0x00007f7ff77e3a89 in GC_suspend_handler (sig=32, info=<optimized out>, context=0x7f7ff47ff270) at /home/mmondor/work/ecl-gitlab/ecl/src/bdwgc/pthread_stop_world.c:226
+#6  <signal handler called>
+#7  pthread_setcancelstate (state=0, oldstate=0x0) at /usr/src/lib/libpthread/pthread.c:822
+#8  0x00007f7ff6aeddc9 in __flockfile_internal (fp=0x7f7ff6d34000, internal=1) at /usr/src/lib/libc/stdio/flockfile.c:115
+#9  0x00007f7ff6aed31b in fwrite (buf=<optimized out>, size=1, count=1, fp=0x7f7ff6d34000) at /usr/src/lib/libc/stdio/fwrite.c:83
+#10 0x00007f7ff7780261 in output_stream_write_byte8 (strm=0x222fbe0, c=0x7f7ff47ff6f0 ".[002", n=1) at /home/mmondor/work/ecl-gitlab/ecl/src/c/file.d:3348
+#11 0x00007f7ff7780541 in eformat_write_char (strm=0x222fbe0, c=46) at /home/mmondor/work/ecl-gitlab/ecl/src/c/file.d:597
+#12 0x00007f7ff77825cc in generic_write_vector (strm=0x222fbe0, data=0x2ca2f60, start=0, end=1) at /home/mmondor/work/ecl-gitlab/ecl/src/c/file.d:509
+#13 0x00007f7ff77844e9 in si_do_write_sequence (seq=0x2ca2f60, stream=0x222fbe0, s=0x3, e=<optimized out>) at /home/mmondor/work/ecl-gitlab/ecl/src/c/file.d:4812
+#14 0x00007f7ff778dc95 in cl_write_string (narg=<optimized out>, strng=0x2ca2f60) at /home/mmondor/work/ecl-gitlab/ecl/src/c/print.d:234
+#15 0x00007f7ff4c01fa9 in L5file_writer_thread () at gc-bug-test.c:163
+#16 0x00007f7ff7771ef0 in cl_apply (narg=<optimized out>, fun=0x2c9fe40, lastarg=<optimized out>) at /home/mmondor/work/ecl-gitlab/ecl/src/c/eval.d:164
+#17 0x00007f7ff77c6e1b in thread_entry_point (arg=0x26abe80) at /home/mmondor/work/ecl-gitlab/ecl/src/c/threads/process.d:273
+#18 0x00007f7ff77e664d in GC_inner_start_routine (sb=<optimized out>, arg=<optimized out>) at /home/mmondor/work/ecl-gitlab/ecl/src/bdwgc/pthread_start.c:57
+#19 0x00007f7ff77e06d4 in GC_call_with_stack_base (fn=<optimized out>, arg=<optimized out>) at /home/mmondor/work/ecl-gitlab/ecl/src/bdwgc/misc.c:1860
+#20 0x00007f7ff720b49d in pthread__create_tramp (cookie=0x7f7ff4000000) at /usr/src/lib/libpthread/pthread.c:500
+#21 0x00007f7ff6a75e90 in ___lwp_park50 () from /usr/lib/libc.so.12
+Cannot access memory at address 0x7f7ff4800000
+(gdb) thread 3
+[Switching to thread 3 (LWP 2)]
+#0  0x00007f7ff6a393fa in _sys___sigsuspend14 () from /usr/lib/libc.so.12
+(gdb) bt
+#0  0x00007f7ff6a393fa in _sys___sigsuspend14 () from /usr/lib/libc.so.12
+#1  0x00007f7ff7207784 in __sigsuspend14 (sigmask=<optimized out>) at /usr/src/lib/libpthread/pthread_cancelstub.c:570
+#2  0x00007f7ff77e3a0f in GC_suspend_handler_inner (sig_arg=<optimized out>, context=<optimized out>) at /home/mmondor/work/ecl-gitlab/ecl/src/bdwgc/pthread_stop_world.c:299
+#3  0x00007f7ff77e3a89 in GC_suspend_handler (sig=32, info=<optimized out>, context=0x7f7ff57ff7a0) at /home/mmondor/work/ecl-gitlab/ecl/src/bdwgc/pthread_stop_world.c:226
+#4  <signal handler called>
+#5  0x00007f7ff6a39538 in read () from /usr/lib/libc.so.12
+#6  0x00007f7ff72075c8 in read (d=<optimized out>, buf=<optimized out>, nbytes=<optimized out>) at /usr/src/lib/libpthread/pthread_cancelstub.c:485
+#7  0x00007f7ff77b5db3 in asynchronous_signal_servicing_thread () at /home/mmondor/work/ecl-gitlab/ecl/src/c/unixint.d:557
+#8  0x00007f7ff7771ef0 in cl_apply (narg=<optimized out>, fun=0x235aa40, lastarg=<optimized out>) at /home/mmondor/work/ecl-gitlab/ecl/src/c/eval.d:164
+#9  0x00007f7ff77c6e1b in thread_entry_point (arg=0x234ad80) at /home/mmondor/work/ecl-gitlab/ecl/src/c/threads/process.d:273
+#10 0x00007f7ff77e664d in GC_inner_start_routine (sb=<optimized out>, arg=<optimized out>) at /home/mmondor/work/ecl-gitlab/ecl/src/bdwgc/pthread_start.c:57
+#11 0x00007f7ff77e06d4 in GC_call_with_stack_base (fn=<optimized out>, arg=<optimized out>) at /home/mmondor/work/ecl-gitlab/ecl/src/bdwgc/misc.c:1860
+#12 0x00007f7ff720b49d in pthread__create_tramp (cookie=0x7f7ff5000000) at /usr/src/lib/libpthread/pthread.c:500
+#13 0x00007f7ff6a75e90 in ___lwp_park50 () from /usr/lib/libc.so.12
+Cannot access memory at address 0x7f7ff5800000
+(gdb) quit
+A debugging session is active.
+
+        Inferior 1 [LWP 0] will be detached.
+
+Quit anyway? (y or n) y
+Detaching from program: /usr/local/gitlab-ecl/bin/ecl, process 2916
+$

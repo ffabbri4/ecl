@@ -1,0 +1,79 @@
+$ gdb /usr/local/gitlab-ecl/bin/ecl 28107
+GNU gdb (GDB) 7.3.1
+Copyright (C) 2011 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.  Type "show copying"
+and "show warranty" for details.
+This GDB was configured as "x86_64--netbsd".
+For bug reporting instructions, please see:
+<http://www.gnu.org/software/gdb/bugs/>...
+Reading symbols from /usr/local/gitlab-ecl/bin/ecl...done.
+Attaching to program: /usr/local/gitlab-ecl/bin/ecl, process 28107
+Reading symbols from /usr/local/gitlab-ecl/lib//libecl.so.16.0...done.
+Loaded symbols for /usr/local/gitlab-ecl/lib//libecl.so.16.0
+Reading symbols from /usr/lib/libpthread.so.1...done.
+[New LWP 2]
+Loaded symbols for /usr/lib/libpthread.so.1
+Reading symbols from /usr/lib/libm.so.0...done.
+Loaded symbols for /usr/lib/libm.so.0
+Reading symbols from /usr/lib/libc.so.12...done.
+Loaded symbols for /usr/lib/libc.so.12
+Reading symbols from /usr/lib/libgcc_s.so.1...done.
+Loaded symbols for /usr/lib/libgcc_s.so.1
+Reading symbols from /usr/pkg/lib/libgmp.so.10...done.
+Loaded symbols for /usr/pkg/lib/libgmp.so.10
+Reading symbols from /usr/pkg/lib/libffi.so.6...done.
+Loaded symbols for /usr/pkg/lib/libffi.so.6
+Reading symbols from /home/mmondor/work/ecl-gitlab/ecl/ecl-gc-bug/gc-bug-test.fas...done.
+Loaded symbols for /home/mmondor/work/ecl-gitlab/ecl/ecl-gc-bug/gc-bug-test.fas
+Reading symbols from /usr/libexec/ld.elf_so...done.
+Loaded symbols for /usr/libexec/ld.elf_so
+[Switching to LWP 1]
+0x00007f7ff6a3953a in read () from /usr/lib/libc.so.12
+(gdb) info threads
+  Id   Target Id         Frame
+  2    LWP 2             0x00007f7ff6a3953a in read () from /usr/lib/libc.so.12
+* 1    LWP 1             0x00007f7ff6a75e7a in ___lwp_park50 () from /usr/lib/libc.so.12
+(gdb) thread 1
+[Switching to thread 1 (LWP 1)]
+#0  0x00007f7ff6a75e7a in ___lwp_park50 () from /usr/lib/libc.so.12
+(gdb) bt
+#0  0x00007f7ff6a75e7a in ___lwp_park50 () from /usr/lib/libc.so.12
+#1  0x00007f7ff72089f6 in pthread__mutex_lock_slow (ptm=0x7f7ff6d29b20) at /usr/src/lib/libpthread/pthread_mutex.c:345
+#2  0x00007f7ff6aedd67 in __flockfile_internal (fp=0x7f7ff6d29e18, internal=1) at /usr/src/lib/libc/stdio/flockfile.c:103
+#3  0x00007f7ff6aed804 in fflush (fp=0x7f7ff6d29e18) at /usr/src/lib/libc/stdio/fflush.c:68
+#4  0x00007f7ff7780563 in eformat_write_char (strm=0xc9dc80, c=10) at /home/mmondor/work/ecl-gitlab/ecl/src/c/file.d:604
+#5  0x00007f7ff778dd8c in cl_fresh_line (narg=<optimized out>) at /home/mmondor/work/ecl-gitlab/ecl/src/c/print.d:271
+#6  0x00007f7ff7753d2d in L32tpl_print (v1values=0x20001b1) at clos/top.c:1862
+#7  0x00007f7ff7759de1 in LC19rep (narg=0) at clos/top.c:1293
+#8  0x00007f7ff775bec3 in L24tpl (narg=0) at clos/top.c:1166
+#9  0x00007f7ff775cfca in L1top_level (narg=1) at clos/top.c:61
+#10 0x00007f7ff7774139 in ecl_interpret (frame=0x7f7fffffd6f0, env=<optimized out>, bytecodes=<optimized out>) at /home/mmondor/work/ecl-gitlab/ecl/src/c/interpreter.d:518
+#11 0x00007f7ff7778b3c in eval_nontrivial_form (form=<optimized out>, env=0x7f7ff7fe5000) at /home/mmondor/work/ecl-gitlab/ecl/src/c/compiler.d:2394
+#12 eval_form (env=0x7f7ff7fe5000, form=<optimized out>) at /home/mmondor/work/ecl-gitlab/ecl/src/c/compiler.d:2408
+#13 0x00007f7ff777a69d in si_eval_with_env (narg=<optimized out>, form=0x2000d61) at /home/mmondor/work/ecl-gitlab/ecl/src/c/compiler.d:3156
+#14 0x00007f7ff775d65f in si_safe_eval (narg=2, v1form=0x2000d61, v2env=0x1) at clos/top.c:4768
+#15 0x0000000000400e63 in main (argc=<optimized out>, argv=<optimized out>) at eclinit10848e.c:60
+(gdb) thread 2
+[Switching to thread 2 (LWP 2)]
+#0  0x00007f7ff6a3953a in read () from /usr/lib/libc.so.12
+(gdb) bt
+#0  0x00007f7ff6a3953a in read () from /usr/lib/libc.so.12
+#1  0x00007f7ff72075c8 in read (d=<optimized out>, buf=<optimized out>, nbytes=<optimized out>) at /usr/src/lib/libpthread/pthread_cancelstub.c:485
+#2  0x00007f7ff77b5db3 in asynchronous_signal_servicing_thread () at /home/mmondor/work/ecl-gitlab/ecl/src/c/unixint.d:557
+#3  0x00007f7ff7771ef0 in cl_apply (narg=<optimized out>, fun=0x235aa40, lastarg=<optimized out>) at /home/mmondor/work/ecl-gitlab/ecl/src/c/eval.d:164
+#4  0x00007f7ff77c6e1b in thread_entry_point (arg=0x234ad80) at /home/mmondor/work/ecl-gitlab/ecl/src/c/threads/process.d:273
+#5  0x00007f7ff77e664d in GC_inner_start_routine (sb=<optimized out>, arg=<optimized out>) at /home/mmondor/work/ecl-gitlab/ecl/src/bdwgc/pthread_start.c:57
+#6  0x00007f7ff77e06d4 in GC_call_with_stack_base (fn=<optimized out>, arg=<optimized out>) at /home/mmondor/work/ecl-gitlab/ecl/src/bdwgc/misc.c:1860
+#7  0x00007f7ff720b49d in pthread__create_tramp (cookie=0x7f7ff5000000) at /usr/src/lib/libpthread/pthread.c:500
+#8  0x00007f7ff6a75e90 in ___lwp_park50 () from /usr/lib/libc.so.12
+Cannot access memory at address 0x7f7ff5800000
+(gdb) quit
+A debugging session is active.
+
+        Inferior 1 [LWP 0] will be detached.
+
+Quit anyway? (y or n) y
+Detaching from program: /usr/local/gitlab-ecl/bin/ecl, process 28107
+$
