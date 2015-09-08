@@ -27,5 +27,5 @@ avoidable bug; I have daemons using ECL with decent uptimes.
   instead of a busy loop, with one thread missing.
 - Verify if boehm-gc's use of SA_RESTART is correct, and if hanging
   situations happen in restartable or non-restartable calls.
-- Merge my heap related fixes in the netbsd-boehm-gc branch and see
-  if anything is different
+- NetBSD has pthread_suspend_np(3) and pthread_resume_np(3).
+  Verify if Boehm-GC can use those, and if so, enable them and test.
