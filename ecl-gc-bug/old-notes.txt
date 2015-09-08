@@ -1,0 +1,97 @@
+
+Thread 1/LWP1 (ECL + SWANK REPL):
+- I have the impression that this thread successfully suspended
+  and is waiting for wakeup signal
+
+#0  0x00007f7ff6a3934a in _sys___sigsuspend14 () from /usr/lib/libc.so.12
+#1  0x00007f7ff7207784 in __sigsuspend14 (sigmask=<optimized out>) at /usr/src/lib/libpthread/pthread_cancelstub.c:570
+#2  0x00007f7ff5e1a86f in GC_suspend_handler_inner (sig_arg=<optimized out>, context=<optimized out>) at pthread_stop_world.c:256
+#3  0x00007f7ff5e1a8d4 in GC_suspend_handler (sig=39, info=<optimized out>, context=0x7f7fffff9b60) at pthread_stop_world.c:187
+#4  <signal handler called>
+#5  0x00007f7ff6a3938a in _sys___select50 () from /usr/lib/libc.so.12
+#6  0x00007f7ff720765c in __select50 (nfds=<optimized out>, readfds=<optimized out>, writefds=<optimized out>, exceptfds=<optimized out>, timeout=<optimized out>) at /usr/src/lib/libpthread/pthread_cancelstub.c:514
+#7  0x00007f7ff2c021b6 in L10serve_event (narg=1) at ext/serve-event.c:443
+#8  0x00007f7ff381492b in L21poll_streams (v1streams=0x3cee1a1, v2timeout=0x2ddcfb0) at /home/mmondor/.slime/fasl/2012-11-08/ecl-13.5.1-d686326c-unix-x86_64/swank-ecl.c:931
+#9  0x00007f7ff3808981 in LC22wait_for_input (narg=<optimized out>, v1streams=0x3cee1a1) at /home/mmondor/.slime/fasl/2012-11-08/ecl-13.5.1-d686326c-unix-x86_64/swank-ecl.c:1084
+#10 0x00007f7ff7760660 in cl_apply (narg=<optimized out>, fun=0x286fb40, lastarg=<optimized out>) at /home/mmondor/work/ecl-git/ecl/src/c/eval.d:166
+#11 0x00007f7ff4405cdc in L221wait_for_input (narg=<optimized out>, v1streams=0x3cee1a1) at /home/mmondor/.slime/fasl/2012-11-08/ecl-13.5.1-d686326c-unix-x86_64/swank-backend.c:7294
+
+
+Thread 2/LWP4
+(Packet parsing and dump thread to fifo file, getting packets via
+mailbox)
+
+- This is the one taking CPU time because of the spinlock it seems
+  deadlocked on
+- It is possible that it could not suspend gracefully and switch
+  to wait-for-wakup-signal state, or it would be in sigsuspend(2)
+  too?
+- pthread_setcancelstate(3) calls originate from libgc; interestingly other
+  threads don't call it
+- Determine if the issue is the stdio filehandler lock
+- If stdio streams cause that much trouble with ECL and threads,
+  then ECL should provide an stdio-like buffering abstraction itself,
+  with actual FILE only used for FFI as needed
+- Another possibility to explore would be if this thread has resumed
+  but others still didn't
+
+#0  pthread__mutex_pause () at /usr/src/lib/libpthread/pthread_mutex.c:183
+#1  0x00007f7ff72084e5 in pthread__mutex_spin (ptm=0x7f7fed800018, owner=<optimized out>) at /usr/src/lib/libpthread/pthread_mutex.c:208
+#2  0x00007f7ff72088e8 in pthread__mutex_lock_slow (ptm=0x7f7fed800018) at /usr/src/lib/libpthread/pthread_mutex.c:240
+#3  0x00007f7ff720b290 in pthread_setcancelstate (state=1, oldstate=0x7f7fedffebcc) at /usr/src/lib/libpthread/pthread.c:805
+#4  0x00007f7ff5e1a832 in GC_suspend_handler_inner (sig_arg=0x27 <Address 0x27 out of bounds>, context=<optimized out>) at pthread_stop_world.c:203
+#5  0x00007f7ff5e1a8d4 in GC_suspend_handler (sig=39, info=<optimized out>, context=0x7f7fedffeca0) at pthread_stop_world.c:187
+#6  <signal handler called>
+#7  pthread_mutex_lock (ptm=0x7f7fed800018) at /usr/src/lib/libpthread/pthread_mutex.c:168
+#8  0x00007f7ff720b290 in pthread_setcancelstate (state=0, oldstate=0x0) at /usr/src/lib/libpthread/pthread.c:805
+#9  0x00007f7ff6aed429 in __flockfile_internal (fp=0x7f7ff6d32d60, internal=1) at /usr/src/lib/libc/stdio/flockfile.c:115
+#10 0x00007f7ff6aec97b in fwrite (buf=<optimized out>, size=1, count=1, fp=0x7f7ff6d32d60) at /usr/src/lib/libc/stdio/fwrite.c:83
+#11 0x00007f7ff776e8d6 in output_stream_write_byte8 (strm=0x3e78be0, c=0x7f7fedfff120 "A\206B\005", n=1) at /home/mmondor/work/ecl-git/ecl/src/c/file.d:3340
+#12 0x00007f7ff776db5d in eformat_write_char (strm=0x3e78be0, c=65) at /home/mmondor/work/ecl-git/ecl/src/c/file.d:595
+#13 0x00007f7ff7770b59 in generic_write_vector (strm=0x3e78be0, data=0x5428720, start=41, end=67) at /home/mmondor/work/ecl-git/ecl/src/c/file.d:507
+#14 0x00007f7ff7772a77 in si_do_write_sequence (seq=0x5428720, stream=0x3e78be0, s=0x3, e=<optimized out>) at /home/mmondor/work/ecl-git/ecl/src/c/file.d:4805
+#15 0x00007f7ff777c195 in cl_write_string (narg=<optimized out>, strng=0x5428720) at /home/mmondor/work/ecl-git/ecl/src/c/print.d:232
+#16 0x00007f7feec13187 in L66packet_hexdump (narg=<optimized out>, v1vec=0xd044e0) at test.c:4616
+#17 0x00007f7feec0baf1 in L62packet_print (v1packet=0x301e4e0, v2stream=0x3e78be0) at test.c:4528
+#18 0x00007f7feec17291 in L118packet_dump_thread () at test.c:9447
+
+
+Thread 3/LWP3 (Packet pcap reader adding packets to mailbox)
+
+- This is the one where allocation needs to collect or grow
+- I have the impression that after sending the stop signal to other
+  threads it waits for confirmation that all threads stopped; it
+  does so using a semaphore which is internally implemented using
+  a condition variable
+
+#0  0x00007f7ff6a75d6a in ___lwp_park50 () from /usr/lib/libc.so.12
+#1  0x00007f7ff7209df0 in pthread_cond_timedwait (abstime=0x0, mutex=0x7f7ff75010e8, cond=0x7f7ff7501118) at /usr/src/lib/libpthread/pthread_cond.c:184
+#2  pthread_cond_wait (cond=0x7f7ff7501118, mutex=0x7f7ff75010e8) at /usr/src/lib/libpthread/pthread_cond.c:231
+#3  0x00007f7ff72069a1 in sem_wait (sem=0x7f7ff6045ec8) at /usr/src/lib/libpthread/sem.c:323
+#4  0x00007f7ff5e1ab9e in GC_stop_world () at pthread_stop_world.c:585
+#5  0x00007f7ff5e0cc1c in GC_stopped_mark (stop_func=0x7f7ff5e0c880 <GC_never_stop_func>) at alloc.c:599
+#6  0x00007f7ff5e0d2bb in GC_try_to_collect_inner (stop_func=0x7f7ff5e0c880 <GC_never_stop_func>) at alloc.c:457
+#7  0x00007f7ff5e0dd86 in GC_collect_or_expand (needed_blocks=1, ignore_off_page=0, retry=0) at alloc.c:1242
+#8  0x00007f7ff5e0deda in GC_allocobj (gran=128, kind=0) at alloc.c:1329
+#9  0x00007f7ff5e11fff in GC_generic_malloc_inner (lb=1516, k=0) at malloc.c:121
+#10 0x00007f7ff5e120d8 in GC_generic_malloc (lb=1516, k=0) at malloc.c:161
+#11 0x00007f7ff77b89f9 in ecl_alloc_atomic (n=1516) at /home/mmondor/work/ecl-git/ecl/src/c/alloc_2.d:743
+#12 0x00007f7ff779e8f8 in ecl_array_allocself (x=0x54286c0) at /home/mmondor/work/ecl-git/ecl/src/c/array.d:571
+#13 0x00007f7ff779f1bf in si_make_vector (etype=0x7f7ff7ae8ff0, dim=0x17b3, adj=0x1, fillp=0x17b3, displ=0x1, disploff=0x3) at /home/mmondor/work/ecl-git/ecl/src/c/array.d:521
+#14 0x00007f7feec14f8b in L13tcpdump_producer_thread () at test.c:781
+
+
+Thread 4/LWP2 (ECL signal service thread)
+
+- This thread seems to have suspended and to be waiting for a wakeup
+  signal
+
+#0  0x00007f7ff6a3934a in _sys___sigsuspend14 () from /usr/lib/libc.so.12
+#1  0x00007f7ff7207784 in __sigsuspend14 (sigmask=<optimized out>) at /usr/src/lib/libpthread/pthread_cancelstub.c:570
+#2  0x00007f7ff5e1a86f in GC_suspend_handler_inner (sig_arg=<optimized out>, context=<optimized out>) at pthread_stop_world.c:256
+#3  0x00007f7ff5e1a8d4 in GC_suspend_handler (sig=39, info=<optimized out>, context=0x7f7ff4fff7a0) at pthread_stop_world.c:187
+#4  <signal handler called>
+#5  0x00007f7ff6a39488 in read () from /usr/lib/libc.so.12
+#6  0x00007f7ff72075c8 in read (d=<optimized out>, buf=<optimized out>, nbytes=<optimized out>) at /usr/src/lib/libpthread/pthread_cancelstub.c:485
+#7  0x00007f7ff77a3f45 in asynchronous_signal_servicing_thread () at /home/mmondor/work/ecl-git/ecl/src/c/unixint.d:553
+

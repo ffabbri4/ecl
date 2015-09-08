@@ -1,0 +1,30 @@
+Using the netbsd-boehm-gc branch, which has minor modifications to
+boehm-gc such that normal signals be used instead of realtime
+signals which appear to be supported by netbsd-6, but which are
+not officially exported to userland, and which gdb has issues
+identifying.
+
+GC_RETRY_SIGNALS=1 ktrace -idtA /usr/local/gitlab-ecl/bin/ecl
+
+The GC_RETRY_SIGNALS environment variable causes boehm-gc to retry
+signaling threads (with the SIG_THR_RESTART signal) which have not
+yet notified that they have awaken after having been suspended (by
+the SIG_SUSPEND) signal.
+
+SIGPWR is used for SIG_SUSPEND, and SIGXCPU for SIG_THR_RESTART.
+
+Somehow, despite resending signal, the suspended thread may remain
+locked waiting on a mutex.  Occasionally, instead of busy-looping,
+we get an idle hang.
+
+- Verify again that the proper signals are sent for the proper reasons
+  and they they are matched by the proper signal responses.
+- Investigate if the signal masks are sometimes bogus, or if the
+  pthread locking systems alter it, or call uninterruptible syscalls.
+- Keep ktrace and gdb backtrace samples.
+- Attempt to better understand why sometimes the result is an idle hang
+  instead of a busy loop, with one thread missing.
+- Verify if boehm-gc's use of SA_RESTART is correct, and if hanging
+  situations happen in restartable or non-restartable calls.
+- Merge my heap related fixes in the netbsd-boehm-gc branch and see
+  if anything is different
