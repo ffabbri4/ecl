@@ -46,3 +46,9 @@ src/config.log
 
 regressions/*.lsp
 regressions/eformat-tests/*.txt
+
+
+ecl-gc-bug/gc-bug-test.c
+ecl-gc-bug/gc-bug-test.eclh
+ecl-gc-bug/gc-bug-test.o
+ecl-gc-bug/gc-bug-test.fas
