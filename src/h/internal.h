@@ -60,7 +60,7 @@ extern void _ecl_dealloc_env(cl_env_ptr);
 #ifdef GBC_BOEHM
 #define ECL_COMPACT_OBJECT_EXTRA(x) ((void*)((x)->array.displaced))
 #endif
-extern void _ecl_set_max_heap_size(cl_index new_size);
+extern void _ecl_set_max_heap_size(size_t new_size);
 extern cl_object ecl_alloc_bytecodes(cl_index data_size, cl_index code_size);
 extern cl_index ecl_object_byte_size(cl_type t);
 
@@ -347,6 +347,8 @@ extern cl_object _ecl_long_double_to_integer(long double d);
 /* main.d */
 
 extern cl_fixnum ecl_option_values[ECL_OPT_LIMIT+1];
+extern size_t fix_heap_size(size_t target);
+extern cl_object heap_size_warning(void);
 
 /* print.d */
 

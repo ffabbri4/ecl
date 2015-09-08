@@ -37,7 +37,7 @@
      mp:mailbox-try-send  (non-blocking)
 
    - Added back removed C interfaces
-     ecl_improt_current_thread
+     ecl_import_current_thread
      ecl_release_current_thread
 
 ** Enhancements:
@@ -59,6 +59,21 @@
 
    - Generated C code works well with IEEE 754 infinities
      (regression tests created)
+
+   - User-defined heap sizes can now exceed the size of a fixnum on 32-bit
+
+   - Prevent endless busy-loop allocation errors on some systems if the OS
+     RLIMIT_DATA soft limit was reached (like on NetBSD).
+     The OS limits or heap limit are altered as necessary, and a safety gap
+     reserved to prevent this scenario.  Unless suppressed, the toplevel
+     also issues a message describing the adaptations and resulting actual
+     heap limit.
+
+   - The heap size limit was intended to be 1GB on 32-bit or 4GB on 64-bit
+     but inconsistency between ECL_FIXNUM_BITS and FIXNUM_BITS in the code
+     prevented the heap to grow for 64-bit.  This now occurs, and a few
+     other less visible bugs were fixed by restoring consistency to
+     ECL_FIXNUM_BITS.
 
 * 16.0.0 changes since 15.3.7
 ** API changes
