@@ -15,7 +15,8 @@ SIGPWR is used for SIG_SUSPEND, and SIGXCPU for SIG_THR_RESTART.
 
 Somehow, despite resending signal, the suspended thread may remain
 locked waiting on a mutex.  Occasionally, instead of busy-looping,
-we get an idle hang.
+we get an idle hang.  When avoiding to use stdio, this is a generally
+avoidable bug; I have daemons using ECL with decent uptimes.
 
 - Verify again that the proper signals are sent for the proper reasons
   and they they are matched by the proper signal responses.
