@@ -135,7 +135,11 @@ STATIC volatile AO_t GC_world_is_stopped = FALSE;
 #   ifdef _SIGRTMIN
 #     define SIG_THR_RESTART _SIGRTMIN + 5
 #   else
-#     define SIG_THR_RESTART SIGRTMIN + 5
+#     ifdef SIGRTMIN
+#       define SIG_THR_RESTART SIGRTMIN + 5
+#     else
+#       define SIG_THR_RESTART SIGXCPU
+#     endif
 #   endif
 # else
 #   define SIG_THR_RESTART SIGXCPU

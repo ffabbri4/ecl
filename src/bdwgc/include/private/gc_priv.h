@@ -2426,10 +2426,14 @@ GC_INNER ptr_t GC_store_debug_info(ptr_t p, word sz, const char *str,
 #   ifndef GC_OPENBSD_UTHREADS
 #     define SIG_SUSPEND SIGXFSZ
 #   endif
+# elif defined(GC_NETBSD_THREADS)
+#   define SIG_SUSPEND SIGPWR
 # elif defined(_SIGRTMIN)
 #   define SIG_SUSPEND _SIGRTMIN + 6
-# else
+# elif defined(SIGRTMIN)
 #   define SIG_SUSPEND SIGRTMIN + 6
+# else
+#error "Could not determine SIG_SUSPEND for your operating system"
 # endif
 #endif /* GC_PTHREADS && !SIG_SUSPEND */
 

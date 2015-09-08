@@ -2577,10 +2577,12 @@
 # define GC_EXPLICIT_SIGNALS_UNBLOCK
 #endif
 
+/*
 #ifdef GC_NETBSD_THREADS
 # define SIGRTMIN 33
 # define SIGRTMAX 63
 #endif
+*/
 
 #ifdef GC_OPENBSD_THREADS
 # include <sys/param.h>
