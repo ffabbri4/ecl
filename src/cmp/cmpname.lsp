@@ -107,7 +107,7 @@ the function name it precedes."
     ((:object :c :static-library :lib :shared-library :dll)
      (or (and (probe-file pathname)
               (find-init-name pathname :tag (kind->tag kind)))
-         (error "Cannot find out entry point for binary file ~A" pathname)))
+         (cmpnote "Cannot find out entry point for binary file ~A" pathname)))
     (otherwise (compute-init-name pathname kind))))
 
 (defun remove-prefix (prefix name)
@@ -115,7 +115,12 @@ the function name it precedes."
       (subseq name (length prefix) nil)
       name))
 
-(defun compute-init-name (pathname &key (kind (guess-kind pathname)) (prefix nil))
+(defun compute-init-name (pathname &key (kind (guess-kind pathname))
+                                     (prefix nil)
+                                     (wrapper nil))
+  "Computes initialization function name. Libraries, FASLS and
+programs init function names can't be randomized to allow
+initialization from the C code which wants to use it."
   (let ((filename (pathname-name (translate-logical-pathname pathname)))
         (unique-name (unique-init-name pathname)))
     (case kind
@@ -124,17 +129,13 @@ the function name it precedes."
       ((:fasl :fas)
        (init-function-name "CODE" :kind :fas :prefix prefix))
       ((:static-library :lib)
-       (init-function-name (if (string-equal "LSP"
-                                             (remove-prefix
-                                              +static-library-prefix+ filename))
+       (init-function-name (if wrapper
                                (remove-prefix +static-library-prefix+ filename)
                                unique-name)
                            :kind :lib
                            :prefix prefix))
       ((:shared-library :dll)
-       (init-function-name (if (string-equal "LSP"
-                                             (remove-prefix
-                                              +shared-library-prefix+ filename))
+       (init-function-name (if wrapper
                                (remove-prefix +shared-library-prefix+ filename)
                                unique-name)
                            :kind :dll
