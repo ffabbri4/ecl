@@ -2577,7 +2577,9 @@ safe_close(int f)
   const cl_env_ptr the_env = ecl_process_env();
   int output;
   ecl_disable_interrupts_env(the_env);
-  output = close(f);
+  while((output = close(f)) == -1
+        &&
+        errno == EINTR);
   ecl_enable_interrupts_env(the_env);
   return output;
 }
@@ -2612,7 +2614,10 @@ safe_fclose(FILE *stream)
   /* If someone have closed our fd, do nothing. See #267. */
   unlikely_if (fileno(stream) == -1) return 0;
   ecl_disable_interrupts_env(the_env);
-  output = fclose(stream);
+  while((output = fclose(stream)) == EOF
+        &&
+        errno == EINTR);
+
   ecl_enable_interrupts_env(the_env);
   return output;
 }

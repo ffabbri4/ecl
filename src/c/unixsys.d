@@ -332,7 +332,10 @@ create_descriptor(cl_object stream, cl_object direction,
     *child = ecl_stream_to_handle
       (stream, direction != @':input');
     if (*child >= 0) {
-      *child = dup(*child);
+	    while((*child = dup(*child)) == -1
+	          &&
+	          errno == EINTR);
+
     } else {
       CEerror(make_constant_base_string("Create a new stream."),
               "~S argument to RUN-PROGRAM does not have a file handle:~%~S",
@@ -369,6 +372,10 @@ si_run_program_inner(cl_object command, cl_object argv, cl_object environ) {
   parent_write = ecl_fixnum(ecl_nth_value(the_env, 1));
   parent_read = ecl_fixnum(ecl_nth_value(the_env, 2));
   parent_error = ecl_fixnum(ecl_nth_value(the_env, 3));
+
+  while(close(parent_error) == -1
+        &&
+        errno == EINTR);
 
   /* descriptor is closed in the stream finalizer */
   stream_read = ecl_make_stream_from_fd(command, parent_read,
@@ -477,7 +484,10 @@ si_spawn_subprocess(cl_object command, cl_object argv, cl_object environ,
     create_descriptor(output, @':output', &child_stdout, &parent_read);
     if (error == @':output') {
       child_stderr = child_stdout;
-      parent_error = dup(parent_read);
+      while((parent_error = dup(parent_read)) == -1
+            &&
+            errno == EINTR);
+
     }
     else
       create_descriptor(error,  @':output', &child_stderr, &parent_error);
@@ -487,12 +497,33 @@ si_spawn_subprocess(cl_object command, cl_object argv, cl_object environ,
       /* Child */
       int j;
       void **argv_ptr = (void **)argv->vector.self.t;
-      dup2(child_stdin, STDIN_FILENO);
-      if (parent_write) close(parent_write);
-      dup2(child_stdout, STDOUT_FILENO);
-      if (parent_read) close(parent_read);
-      dup2(child_stderr, STDERR_FILENO);
-      if (parent_error) close(parent_error);
+
+      if (parent_write)
+	      while(close(parent_write) == -1
+	            &&
+	            errno == EINTR);
+
+      if (parent_read)
+	      while(close(parent_read) == -1
+	            &&
+	            errno == EINTR);
+
+      if (parent_error)
+	      while(close(parent_error) == -1
+	            &&
+	            errno == EINTR);
+
+
+      while(dup2(child_stdin,  STDIN_FILENO) == -1
+            &&
+            errno == EINTR);
+      while(dup2(child_stdout, STDOUT_FILENO) == -1
+            &&
+            errno == EINTR);
+      while(dup2(child_stderr, STDERR_FILENO) == -1
+            &&
+            errno == EINTR);
+
       for (j = 0; j < argv->vector.fillp; j++) {
         cl_object arg = argv->vector.self.t[j];
         if (arg == ECL_NIL) {
@@ -512,14 +543,22 @@ si_spawn_subprocess(cl_object command, cl_object argv, cl_object environ,
       perror("exec");
       abort();
     }
+    while(close(child_stdin) == -1
+          &&
+          errno == EINTR);
+    while(close(child_stdout) == -1
+          &&
+          errno == EINTR);
+    while(close(child_stderr) == -1
+          &&
+          errno == EINTR);
+    
     if (child_pid < 0) {
       pid = ECL_NIL;
     } else {
+	   
       pid = ecl_make_fixnum(child_pid);
     }
-    close(child_stdin);
-    close(child_stdout);
-    close(child_stderr);
   }
 #else  /* NACL */
   {
@@ -529,9 +568,21 @@ si_spawn_subprocess(cl_object command, cl_object argv, cl_object environ,
 #endif
 
   if (Null(pid)) {
-    if (parent_write) close(parent_write);
-    if (parent_read) close(parent_read);
-    if (parent_error) close(parent_error);
+    if (parent_write)
+	    while(close(parent_write) == -1
+	          &&
+	          errno == EINTR);
+
+    if (parent_read)
+	    while(close(parent_read) == -1
+	          &&
+	          errno == EINTR);
+
+    if (parent_error)
+	    while(close(parent_error) == -1
+	          &&
+	          errno == EINTR);
+
     parent_write = 0;
     parent_read = 0;
     parent_error = 0;
