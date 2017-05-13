@@ -1,1 +1,9 @@
 language: c
+
+dist: trusty
+
+before_install:
+- sudo apt-get -qq update
+- sudo apt-get install -y libgc-dev libffi-dev libgmp-dev libatomic-ops-dev
+
+script: ./configure  --enable-gmp=system  --enable-threads=yes --enable-boehm=auto --enable-libatomic=system && make && sudo make install ; make check
