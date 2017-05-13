@@ -14,3 +14,5 @@ BSD, OpenBSD, Solaris (at least v. 9), Microsoft Windows (MSVC, MinGW
 and Cygwin) and OSX, running on top of the Intel, Sparc, Alpha, ARM
 and PowerPC processors.  Porting to other architectures should be
 rather easy.
+
+[![Build status](https://ci.appveyor.com/api/projects/status/jpxq8yntqk74w480/branch/develop?svg=true)](https://ci.appveyor.com/project/ffabbri4/ecl-d6892/branch/develop)
