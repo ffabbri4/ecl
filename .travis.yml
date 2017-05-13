@@ -1,1 +1,35 @@
 language: c
+
+dist: trusty
+
+before_install:
+      - sudo apt-get -qq update
+      - sudo apt-get install -y libgc-dev libffi-dev libgmp-dev libatomic-ops-dev
+      - echo -n | openssl s_client -connect scan.coverity.com:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' | sudo tee -a /etc/ssl/certs/ca-
+
+script:
+   - >
+      if [ ${COVERITY_SCAN_BRANCH} != 1 ]; then
+              ./configure  --enable-gmp=system  --enable-threads=yes --enable-boehm=auto --enable-libatomic=system
+              make
+              sudo make install
+              make test
+       fi 
+
+
+env:
+  global:
+   # The next declaration is the encrypted COVERITY_SCAN_TOKEN, created
+   #   via the "travis encrypt" command using the project repo's public key
+   - secure: "WS8INxrHmuA9MUo6CMQVewWdYVhE4CtIkcT53XmcxPYSX56mCUD579rP57JsQv7M/hfrSS15czwQsHFAp1KqPwEA/LUmSML35ZNWnyuyzv+k+9tM7q3L4EhvVH5K8XurKvMo1oi3DnnPJsK/Nikbvcor3XGB0r34QzFPsJIRGO6qQuFT8JAUD1CraQfiIPt03DpefGdgKphpKijpjTUIKMxTMkBh5A0DR8ZaduXbqCDGBJAtThEliHptLm83vmfmlB+uogDLjveSh9y0ItyQI/cI/oYlvY/p7fDb2GKGqqhZzwuQgNRp27ocQcPY2aK72VqpfMrzyp4EF30SjMMJfxAfV+18C+cQsZfHX5PJ7hRKHT5uZIMaPdBZfW6a68AdCNy/KbJ6a/f32ClEPvCF7FLvz9YbaYdNThjYNAaU0mT/FpjIpg5t57/oGvlWrFz/R/p/IhxOCoBQWJCghIo518N5EpBUlTcByYJpiReWJj3ICr0UgPweW26M0Vkkw5plDM3aRFgv+QPOm8VAnkRl9uBL7AVct+9g6osljXx9yNmijefVtUo09U5fBwWr7w3sgVvOZMJkaG30Cth+RuG9kOBjO9NF9DNsrwc9JEsmicbLBWsA7goDdHnz77/gaBHafvQTx5YKLSkg7ftd+KTVk0ZY/VLjjh40qJY5AiWVenM="
+
+
+addons:
+  coverity_scan:
+    project:
+      name: "ffabbri4/ecl2"
+      description: "<Your project description here>"
+    notification_email: fabrizio.fabbri@gmail.com
+    build_command_prepend: "./configure  --enable-gmp=system  --enable-threads=yes --enable-boehm=auto --enable-libatomic=system"
+    build_command:   "make"
+    branch_pattern: coverity_scan

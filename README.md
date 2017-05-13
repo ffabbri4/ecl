@@ -15,4 +15,6 @@ and Cygwin) and OSX, running on top of the Intel, Sparc, Alpha, ARM
 and PowerPC processors.  Porting to other architectures should be
 rather easy.
 
-[![Build status](https://ci.appveyor.com/api/projects/status/jpxq8yntqk74w480/branch/develop?svg=true)](https://ci.appveyor.com/project/ffabbri4/ecl-d6892/branch/develop)
+[![Appveyor Build status](https://ci.appveyor.com/api/projects/status/jpxq8yntqk74w480/branch/develop?svg=true)](https://ci.appveyor.com/project/ffabbri4/ecl-d6892/branch/develop)[![Travis Build Status](https://travis-ci.org/ffabbri4/ecl2.svg?branch=coverity_scan)](https://travis-ci.org/ffabbri4/ecl2)[![Coverity Scan Build Status](https://img.shields.io/coverity/scan/12713.svg)](https://scan.coverity.com/projects/ffabbri4-ecl2)
+
+
